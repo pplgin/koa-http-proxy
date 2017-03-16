@@ -1,0 +1,21 @@
+{
+  "name": "koa-http-proxy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "proxy"
+  ],
+  "author": "johnnyjiang",
+  "license": "ISC",
+  "devDependencies": {
+    "koa": "^2.2.0",
+    "request": "^2.81.0"
+  },
+  "dependencies": {
+    "co-request": "^1.0.0"
+  }
+}
