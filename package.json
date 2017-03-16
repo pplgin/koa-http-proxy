@@ -1,19 +1,22 @@
 {
-  "name": "koa-http-proxy",
-  "version": "1.0.0",
-  "description": "",
+  "name": "koav-api-proxy",
+  "version": "0.0.2",
+  "description": "基于koa的proxy middle代理",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pplgin/koa-http-proxy.git"
+  },
   "keywords": [
     "proxy"
   ],
-  "author": "johnnyjiang",
+  "author": "pplgin",
   "license": "ISC",
   "devDependencies": {
-    "koa": "^2.2.0",
-    "request": "^2.81.0"
+    "koa": "^2.2.0"
   },
   "dependencies": {
     "co-request": "^1.0.0"
