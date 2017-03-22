@@ -7,8 +7,8 @@
 
 const request = require('co-request');
 
-// 获取body参数
-function* getParsedBody(ctx, options) {
+// deal body parse
+const getParsedBody = (ctx, options)=>{
   let _body = ctx.request.body;
   let _method = options.method;
   // load body data
@@ -23,8 +23,8 @@ function* getParsedBody(ctx, options) {
   }
 }
 
-// 处理response header
-function* proxyResponse(ctx, response) {
+// deal response header
+const proxyResponse = (ctx, response)=>{
   // 循环替换headers内容
   for (var key in response.headers) {
     ctx.response.set(key, response.headers[key]);
@@ -40,12 +40,12 @@ module.exports = (mapHost, options)=>{
   options = options || {};
 
 
-  return function* handleProxy(next) {
-    let ctx = this;
+  return (ctx,next)=>{
     // match api rules
     if (options.match && !ctx.path.match(options.match)) {
-      return yield * next;
+      return next();
     }
+
     // method 强制 method
     options.method = options.method || ctx.method.toUpperCase();
 
@@ -63,12 +63,12 @@ module.exports = (mapHost, options)=>{
 
 
     // load body data
-    yield getParsedBody(ctx, _requestOpt);
-
+    getParsedBody(ctx, _requestOpt);
     try {
-      let response = yield request(_requestOpt);
-      // response
-      yield proxyResponse(ctx, response);
+      return request(_requestOpt).then((res)=>{
+        // set response header
+        proxyResponse(ctx, res);
+      });
     } catch (err) {
       ctx.throw(500, err);
     }
