@@ -5,7 +5,8 @@
  * @createTime          2017-03-16T12:47:44+0800
  */
 
-const request = require('co-request');
+const { defaults } = require('co-request');
+const request = defaults({encoding:null})
 
 // deal body parse
 const getParsedBody = (ctx, options)=>{
