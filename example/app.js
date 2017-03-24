@@ -5,11 +5,8 @@ const proxy = require('../index');
 /**
  * 使用方式
  */
-app.use(proxy('http://192.168.22.126/',{
-  match: '/webapi/',
-  headers:{
-    'host':'dev1cctalk.hujiang.com'
-  },
+app.use(proxy('http://0.0.0.0:3038',{
+  match: '/',
   jar: true
 }))
 
