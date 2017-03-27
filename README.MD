@@ -1,8 +1,8 @@
 #### koa-api-proxy
 
-一个基于koa的 http proxy middleware
+koa2 http proxy middleware
 
-目前只支持： http 基本请求 post，get,put
+目前支持： http 基本请求 post，get,put
 
 待解决: 文件上传
 

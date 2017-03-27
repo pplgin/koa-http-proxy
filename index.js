@@ -47,9 +47,6 @@ module.exports = (mapHost, options)=>{
       return next();
     }
 
-    // method 强制 method
-    options.method = options.method || ctx.method.toUpperCase();
-
     // request options
     options.headers = Object.assign(ctx.request.headers, options.headers || {});
 
@@ -58,7 +55,7 @@ module.exports = (mapHost, options)=>{
 
     let _requestOpt = {
       url: mapHost + ctx.url,
-      method: options.method,
+      method: ctx.method.toUpperCase(),
       headers: options.headers
     };
 
