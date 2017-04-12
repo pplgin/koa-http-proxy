@@ -5,11 +5,15 @@
  * @createTime          2017-03-16T12:47:44+0800
  */
 
-const { defaults } = require('co-request');
-const request = defaults({encoding:null})
+const {
+  defaults
+} = require('co-request');
+const request = defaults({
+  encoding: null
+})
 
 // deal body parse
-const getParsedBody = (ctx, options)=>{
+const getParsedBody = (ctx, options) => {
   let _body = ctx.request.body;
   let _method = options.method;
   // load body data
@@ -25,7 +29,7 @@ const getParsedBody = (ctx, options)=>{
 }
 
 // deal response header
-const proxyResponse = (ctx, response)=>{
+const proxyResponse = (ctx, response) => {
   // 循环替换headers内容
   for (var key in response.headers) {
     ctx.response.set(key, response.headers[key]);
@@ -34,36 +38,58 @@ const proxyResponse = (ctx, response)=>{
   ctx.response.status = response.statusCode;
 }
 
-module.exports = (mapHost, options)=>{
-  if (!mapHost) {
-    throw new Error('mapHost should not be empty')
+module.exports = (hostmap, options) => {
+  if (!hostmap) {
+    throw new Error('hostmap should not be empty')
   }
   options = options || {};
 
 
-  return (ctx,next)=>{
-    // match api rules
-    if (options.match && !ctx.path.match(options.match)) {
-      return next();
+  return (ctx, next) => {
+    // new options
+    let _requestOpt = {};
+    if (typeof hostmap !== 'string' && hostmap.constructor.name.toLocaleLowerCase() === 'array') {
+      let proxyConf = hostmap.filter((conf) => {
+        return ctx.path.match(conf.match);
+      });
+
+      // no match
+      if (!proxyConf.length) return next();
+      // list get first one
+      proxyConf = proxyConf[0];
+
+      _requestOpt = Object.assign(_requestOpt, {
+        url: proxyConf.target + ctx.url,
+        headers: proxyConf.headers || {}
+      })
+
+    } else {
+
+      // match api rules
+      if (options.match && !ctx.path.match(options.match)) {
+        return next();
+      }
+
+      _requestOpt = {
+        url: hostmap + ctx.url,
+        headers: options.headers || {}
+      };
     }
 
     // request options
-    options.headers = Object.assign(ctx.request.headers, options.headers || {});
+    _requestOpt.headers = Object.assign(ctx.request.headers, _requestOpt.headers || {});
 
     // remvoe accept-encoding
-    delete options.headers['accept-encoding'];
+    delete _requestOpt.headers['accept-encoding'];
 
-    let _requestOpt = {
-      url: mapHost + ctx.url,
-      method: ctx.method.toUpperCase(),
-      headers: options.headers
-    };
-
+    // not suppport method
+    _requestOpt.method = ctx.method.toUpperCase();
 
     // load body data
     getParsedBody(ctx, _requestOpt);
+
     try {
-      return request(_requestOpt).then((res)=>{
+      return request(_requestOpt).then((res) => {
         // set response header
         proxyResponse(ctx, res);
       });

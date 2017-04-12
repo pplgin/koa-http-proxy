@@ -12,21 +12,30 @@ const Koa = require('koa')
 const app = new Koa();
 const proxy = require('./')
 
+
 /**
- * 使用方式
+ * use config single
+ * @type {[type]}
  */
-app.use(proxy('http://192.168.22.126/',{
-  match: '/webapi/',
-  headers:{
-    'host':'dev1cctalk.hujiang.com'
-  },
+app.use(proxy('http://www.google.com', {
+  match: '/test',
   jar: true
 }))
-//proxy('代理urk',{
-    match:'', // api 路径包含项
-    headers, // 设置请求的header
-    jar://是否cookies
-  })
+
+/**
+ * use config multi
+ * @type {[type]}
+ */
+app.use(proxy([{
+  target: 'http://www.google.com',
+  match: '/dist',
+  jar: true
+}, {
+  target: 'http://www.yahoo.com',
+  match: '/t',
+  jar: true
+}]))
+
 ```
 
 

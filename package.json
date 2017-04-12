@@ -1,5 +1,5 @@
 {
-  "name": "koav-api-proxy",
+  "name": "@hujiang/koa-http-proxy",
   "version": "0.0.5",
   "description": "koa2 proxy middleware",
   "main": "index.js",
