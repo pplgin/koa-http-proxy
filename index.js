@@ -12,11 +12,9 @@ const request = defaults({
   encoding: null
 })
 
-// deal body parse
 const getParsedBody = (ctx, options) => {
   let _body = ctx.request.body;
   let _method = options.method;
-  // load body data
   if (_method === 'POST' || _method === 'PUT' || _method === 'PATCH') {
     if (_body instanceof Object && !options.headers['x-requested-with']) {
       options.headers['content-type'] = 'application/json; charset=UTF-8';
@@ -28,9 +26,7 @@ const getParsedBody = (ctx, options) => {
   }
 }
 
-// deal response header
 const proxyResponse = (ctx, response) => {
-  // 循环替换headers内容
   for (var key in response.headers) {
     ctx.response.set(key, response.headers[key]);
   }
@@ -48,23 +44,27 @@ module.exports = (hostmap, options) => {
   return (ctx, next) => {
     // new options
     let _requestOpt = {};
-    if (typeof hostmap !== 'string' && hostmap.constructor.name.toLocaleLowerCase() === 'array') {
-      let proxyConf = hostmap.filter((conf) => {
-        return ctx.path.match(conf.match);
+    if (typeof hostmap !== 'string' && Array.isArray(hostmap)) {
+
+      let proxyConf = hostmap.find(conf => {
+        if (Array.isArray(conf.match)) {
+          let proxyPath = conf.match.find(path => new RegExp(path).test(ctx.path))
+          if (proxyPath) {
+            return conf
+          }
+          return null
+        }
+        return new RegExp(conf.match).test(ctx.path)
       });
 
       // no match
-      if (!proxyConf.length) return next();
-      // list get first one
-      proxyConf = proxyConf[0];
-
+      if (!proxyConf) return next();
       _requestOpt = Object.assign(_requestOpt, {
         url: proxyConf.target + ctx.url,
         headers: proxyConf.headers || {}
       })
 
     } else {
-
       // match api rules
       if (options.match && !ctx.path.match(options.match)) {
         return next();
