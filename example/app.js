@@ -20,7 +20,7 @@ app.use(proxy([{
   jar: true
 }, {
   target: 'http://www.yahoo.com',
-  match: '/t',
+  match: ['/t', '/m'],
   jar: true
 }]))
 
