@@ -7,6 +7,7 @@ koa2 http proxy middleware
 待解决: 文件上传
 
 使用方法：
+
 ```
 const Koa = require('koa')
 const app = new Koa();
@@ -28,7 +29,7 @@ app.use(proxy('http://www.google.com', {
  */
 app.use(proxy([{
   target: 'http://www.google.com',
-  match: '/dist',
+  match: ['/dist', '/dist2'], //
   jar: true
 }, {
   target: 'http://www.yahoo.com',
@@ -37,6 +38,5 @@ app.use(proxy([{
 }]))
 
 ```
-
 
 

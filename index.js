@@ -1,22 +1,31 @@
 /**
- * koa-http-proxy
+ * koav-http-proxy
  * @author  pplgin
- * @email   johnnyjiang813@gmail.com
- * @createTime          2017-03-16T12:47:44+0800
  */
 
-const {
-  defaults
-} = require('co-request');
-const request = defaults({
-  encoding: null
-})
+const request = require('request')
+
+
+/**
+ * promise request
+ */
+const fetch = (options) => {
+  return new Promise((reslove, reject) => {
+    request(options, (err, res, body) => {
+      if (err) {
+        reject(err)
+        return
+      }
+      reslove({ res, body })
+    })
+  })
+}
 
 const getParsedBody = (ctx, options) => {
   let _body = ctx.request.body;
   let _method = options.method;
   if (_method === 'POST' || _method === 'PUT' || _method === 'PATCH') {
-    if (_body instanceof Object && !options.headers['x-requested-with']) {
+    if (_body instanceof Object) {
       options.headers['content-type'] = 'application/json; charset=UTF-8';
       options.headers['accept'] = '*/*';
       delete options.headers['content-length'];
@@ -40,8 +49,7 @@ module.exports = (hostmap, options) => {
   }
   options = options || {};
 
-
-  return (ctx, next) => {
+  return async (ctx, next) => {
     // new options
     let _requestOpt = {};
     if (typeof hostmap !== 'string' && Array.isArray(hostmap)) {
@@ -81,18 +89,14 @@ module.exports = (hostmap, options) => {
 
     // remvoe accept-encoding
     delete _requestOpt.headers['accept-encoding'];
-
-    // not suppport method
     _requestOpt.method = ctx.method.toUpperCase();
 
     // load body data
     getParsedBody(ctx, _requestOpt);
 
     try {
-      return request(_requestOpt).then((res) => {
-        // set response header
-        proxyResponse(ctx, res);
-      });
+      const {res, body} = await fetch(_requestOpt)
+      proxyResponse(ctx, res);
     } catch (err) {
       ctx.throw(500, err);
     }
