@@ -1,6 +1,6 @@
 {
-  "name": "@hujiang/koa-http-proxy",
-  "version": "0.0.8",
+  "name": "koav-api-proxy",
+  "version": "0.1.0",
   "description": "koa2 proxy middleware",
   "main": "index.js",
   "scripts": {
@@ -19,6 +19,7 @@
     "koa": "^2.2.0"
   },
   "dependencies": {
+    "multer": "^1.4.1",
     "request": "^2.83.0"
   }
 }

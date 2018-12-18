@@ -4,7 +4,7 @@
  */
 
 const request = require('request')
-
+const multer = require('multer')()
 
 /**
  * promise request
@@ -21,17 +21,40 @@ const fetch = (options) => {
   })
 }
 
-const getParsedBody = (ctx, options) => {
+
+
+const getParsedBody = async (ctx, options) => {
   let _body = ctx.request.body;
   let _method = options.method;
   if (_method === 'POST' || _method === 'PUT' || _method === 'PATCH') {
-    if (_body instanceof Object) {
-      options.headers['content-type'] = 'application/json; charset=UTF-8';
-      options.headers['accept'] = '*/*';
-      delete options.headers['content-length'];
+    switch (true) {
+      case ctx.is('multipart') === 'multipart':
+        await new Promise((resolve, reject) => {
+          multer.any()(_req, _res, (err) => {
+            err ? reject(err) : resolve(ctx.req)
+          })
+        })
+        delete options.headers['content-type']
+        let file = ctx.req.files[0]
+        options.formData = {
+          [file.originalname]: {
+            value:  file.buffer,
+            options: {
+              filename: file.originalname,
+              contentType: file.mimetype
+            }
+          }
+        }
+        break;
+      default:
+        options.headers['content-type'] = 'application/json; charset=UTF-8';
+        options.headers['accept'] = '*/*';
+
+        options.json = true;
+        options.body = _body;
+        break;
     }
-    options.json = true;
-    options.body = _body;
+    delete options.headers['content-length'];
   }
 }
 

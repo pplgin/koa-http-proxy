@@ -2,9 +2,11 @@
 
 koa2 http proxy middleware
 
+### Added
+- 支持文件上传
+
 目前支持： http 基本请求 post，get,put
 
-待解决: 文件上传
 
 使用方法：
 
