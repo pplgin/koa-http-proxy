@@ -3,25 +3,15 @@ const app = new Koa();
 const proxy = require('../index');
 
 /**
- * use config single
- */
-app.use(proxy('http://www.google.com', {
-  match: '/test',
-  jar: true
-}))
-
-/**
  * use config multi
  * @type {[type]}
  */
 app.use(proxy([{
   target: 'http://www.google.com',
-  match: '/dist',
-  jar: true
+  path: '/dist',
 }, {
   target: 'http://www.yahoo.com',
-  match: ['/t', '/m'],
-  jar: true
+  path: ['/t', '/m'],
 }]))
 
 

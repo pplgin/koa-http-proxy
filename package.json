@@ -1,25 +1,36 @@
 {
-  "name": "koav-api-proxy",
-  "version": "0.1.0",
-  "description": "koa2 proxy middleware",
+  "name": "koa-api-proxies",
+  "version": "0.0.1",
+  "description": "koa2 http proxy middleware",
   "main": "index.js",
+  "directories": {
+    "example": "example"
+  },
+  "dependencies": {
+    "multer": "^1.4.1",
+    "request": "^2.83.0",
+    "koa": "^2.2.0"
+  },
+  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/pplgin/koa-http-proxy.git"
+    "url": "git+https://github.com/pplgin/koa-http-proxy.git"
   },
   "keywords": [
-    "proxy"
+    "koa2",
+    "proxy",
+    "middleware",
+    "api",
+    "http",
+    "request"
   ],
   "author": "pplgin",
   "license": "ISC",
-  "devDependencies": {
-    "koa": "^2.2.0"
+  "bugs": {
+    "url": "https://github.com/pplgin/koa-http-proxy/issues"
   },
-  "dependencies": {
-    "multer": "^1.4.1",
-    "request": "^2.83.0"
-  }
+  "homepage": "https://github.com/pplgin/koa-http-proxy#readme"
 }

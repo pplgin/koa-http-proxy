@@ -2,14 +2,13 @@
  * koav-http-proxy
  * @author  pplgin
  */
-
 const request = require('request')
 const multer = require('multer')()
 
 /**
  * promise request
  */
-const fetch = (options) => {
+function fetch(options) {
   return new Promise((reslove, reject) => {
     request(options, (err, res, body) => {
       if (err) {
@@ -21,16 +20,20 @@ const fetch = (options) => {
   })
 }
 
-
-
-const getParsedBody = async (ctx, options) => {
-  let _body = ctx.request.body;
-  let _method = options.method;
+/**
+ * [parsedBody description]
+ * @param  {[type]} ctx     [description]
+ * @param  {[type]} options [description]
+ * @return {[type]}         [description]
+ */
+async function parsedBody(ctx, options) {
+  let _body = ctx.request.body
+  let _method = options.method
   if (_method === 'POST' || _method === 'PUT' || _method === 'PATCH') {
     switch (true) {
       case ctx.is('multipart') === 'multipart':
         await new Promise((resolve, reject) => {
-          multer.any()(_req, _res, (err) => {
+          multer.any()(_req, _res, err => {
             err ? reject(err) : resolve(ctx.req)
           })
         })
@@ -38,90 +41,114 @@ const getParsedBody = async (ctx, options) => {
         let file = ctx.req.files[0]
         options.formData = {
           [file.originalname]: {
-            value:  file.buffer,
+            value: file.buffer,
             options: {
               filename: file.originalname,
               contentType: file.mimetype
             }
           }
         }
-        break;
+        break
       default:
-        options.headers['content-type'] = 'application/json; charset=UTF-8';
-        options.headers['accept'] = '*/*';
+        options.headers['content-type'] = 'application/json; charset=UTF-8'
+        options.headers['accept'] = '*/*'
 
-        options.json = true;
-        options.body = _body;
-        break;
+        options.json = true
+        options.body = _body
+        break
     }
-    delete options.headers['content-length'];
+    delete options.headers['content-length']
   }
 }
 
-const proxyResponse = (ctx, response) => {
-  for (var key in response.headers) {
-    ctx.response.set(key, response.headers[key]);
+/**
+ * [proxyResponse description]
+ * @param  {[type]} ctx [description]
+ * @param  {[type]} res [description]
+ * @return {[type]}     [description]
+ */
+function proxyResponse(ctx, res) {
+  for (let key in res.headers) {
+    ctx.response.set(key, res.headers[key])
   }
-  ctx.body = response.body;
-  ctx.response.status = response.statusCode;
+  ctx.body = res.body || res.statusMessage
+  ctx.response.status = res.statusCode
 }
 
-module.exports = (hostmap, options) => {
-  if (!hostmap) {
-    throw new Error('hostmap should not be empty')
+/**
+ * proxy config
+ * @param  {[array]} proxies [description]
+ * eg:
+ * [{
+ *   target: string, //remote address
+ *   path: [string|array],  // match path
+ *   headers: object, // cooke、ua 、contenType ...
+ *   beforeSend: (req) => {}, // beforesend rewarite url or headers ...
+ * }]
+ */
+module.exports = proxies => {
+  // check options type
+  if (!Array.isArray(proxies)) {
+    throw new TypeError('options type should be array!')
   }
-  options = options || {};
+
+  // change to obj
+  const proxyObj = proxies.reduce((caches, conf) => {
+    let { path, ...opts } = conf
+    if (Array.isArray(path)) {
+      path = [].concat.apply([], path)
+      path.forEach(key => {
+        caches[key] = opts
+      })
+      return caches
+    }
+
+    if (typeof path === 'string') {
+      caches[path] = opts
+      return caches
+    }
+
+    throw new Error(`proxy path: ${path} must be string or array`)
+  }, {})
 
   return async (ctx, next) => {
-    // new options
-    let _requestOpt = {};
-    if (typeof hostmap !== 'string' && Array.isArray(hostmap)) {
 
-      let proxyConf = hostmap.find(conf => {
-        if (Array.isArray(conf.match)) {
-          let proxyPath = conf.match.find(path => new RegExp(path).test(ctx.path))
-          if (proxyPath) {
-            return conf
-          }
-          return null
-        }
-        return new RegExp(conf.match).test(ctx.path)
-      });
+    const matchKey = Object.keys(proxyObj).find(key => new RegExp(key).test(ctx.path))
 
-      // no match
-      if (!proxyConf) return next();
-      _requestOpt = Object.assign(_requestOpt, {
-        url: proxyConf.target + ctx.url,
-        headers: proxyConf.headers || {}
-      })
+    // no match
+    if (!matchKey) return next()
+  
+    const config = proxyObj[matchKey]
 
-    } else {
-      // match api rules
-      if (options.match && !ctx.path.match(options.match)) {
-        return next();
-      }
-
-      _requestOpt = {
-        url: hostmap + ctx.url,
-        headers: options.headers || {}
-      };
+    if (!config.target) {
+      throw new Error(`proxy target: ${target} be required!`)
     }
 
-    // request options
-    _requestOpt.headers = Object.assign(ctx.request.headers, _requestOpt.headers || {});
+    let options = Object.assign({
+        jar: true
+      },
+      {
+        url: config.target + ctx.url,
+        headers: config.headers || {}
+      }
+    )
 
     // remvoe accept-encoding
-    delete _requestOpt.headers['accept-encoding'];
-    _requestOpt.method = ctx.method.toUpperCase();
+    delete options.headers['accept-encoding']
+    options.method = ctx.method.toUpperCase()
 
     // load body data
-    getParsedBody(ctx, _requestOpt);
+    parsedBody(ctx, options)
+
+    if (config.beforeSend && typeof config.beforeSend === 'function') {
+      config.beforeSend(ctx, options)
+    }
 
     try {
-      const {res, body} = await fetch(_requestOpt)
-      proxyResponse(ctx, res);
+      const { res, body } = await fetch(options)
+      proxyResponse(ctx, res)
     } catch (err) {
-      ctx.throw(500, err);
+      ctx.throw(500, err)
     }
   }
-};
+}

@@ -1,44 +1,36 @@
-#### koa-api-proxy
+## koa-api-proxies
 
-koa2 http proxy middleware
+> koa2 http proxy middleware
 
-### Added
-- 支持文件上传
+###　Suport
 
-目前支持： http 基本请求 post，get,put
+> post、get、put、delete； file upload
 
-
-使用方法：
+###　Use ：
 
 ```
-const Koa = require('koa')
-const app = new Koa();
-const proxy = require('./')
-
-
-/**
- * use config single
- * @type {[type]}
- */
-app.use(proxy('http://www.google.com', {
-  match: '/test',
-  jar: true
-}))
-
-/**
- * use config multi
- * @type {[type]}
- */
-app.use(proxy([{
-  target: 'http://www.google.com',
-  match: ['/dist', '/dist2'], //
-  jar: true
-}, {
-  target: 'http://www.yahoo.com',
-  match: '/t',
-  jar: true
-}]))
-
+npm install koa-api-proxies
 ```
 
-
+```javascript
+    const Koa = require('koa')
+    const app = new Koa()
+    const proxy = require('koa-api-proxies')
+    /**
+     * use config single
+     * @type {[type]}
+     */
+    /**
+     * use config multi
+     * @type {[type]}
+     */
+    app.use(proxy([{
+      target: 'http://www.google.com',
+      match: ['/dist', '/dist2'],
+    }, {
+      target: 'http://www.yahoo.com',
+      match: '/t',
+      beforeSend:(ctx, options) => {
+      }
+    }]))
+```
