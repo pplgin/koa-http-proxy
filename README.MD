@@ -2,15 +2,27 @@
 
 > koa2 http proxy middleware
 
-###　Suport
+###　Support
 
-> post、get、put、delete； file upload
+post、get、put、delete 基本请求, 文件上传
 
-###　Use ：
+###　Use
 
 ```
 npm install koa-api-proxies
 ```
+
+### ProxyConfig
+
+| 参数 | 类型 |说明|
+|---|---|---|
+| target | string | 代理地址(domain+port)|
+| path | string(string array)| 代理匹配url，支持字符串数组，字符串 |
+| headers | object | 自定义header相关，如`cookie, ua` |
+| beforeSend | funciton | 请求前处理，参数ctx, options完整转发配置 |
+
+
+### Example
 
 ```javascript
     const Koa = require('koa')
@@ -26,10 +38,10 @@ npm install koa-api-proxies
      */
     app.use(proxy([{
       target: 'http://www.google.com',
-      match: ['/dist', '/dist2'],
+      path: ['/dist', '/dist2'],
     }, {
       target: 'http://www.yahoo.com',
-      match: '/t',
+      path: '/t',
       beforeSend:(ctx, options) => {
       }
     }]))
